@@ -60,13 +60,28 @@ def zkSynchSceneToNetwork_Execute(  ):
   projectPath = Application.ActiveProject.Path
   sourceFolder = projectPath
 
+  # ------------------------- Juan modified START -------------------------
+  # this is Juan project specific...
+  import linecache
+  fileToRead = r"R:\_JPstuff_actually_\Dropbox\JPB_2D3D_share\tools\zookeeper\zookeeper_sync_data.txt"
+
+  jpbLocalFolder = linecache.getline( fileToRead, 1 )
+  jpbSyncFolder = linecache.getline( fileToRead, 2 )
+  jpbLocalFolder = jpbLocalFolder.strip()
+  jpbSyncFolder = jpbSyncFolder.strip()
+
+  jpbTargetProject = projectPath.replace( jpbLocalFolder, jpbSyncFolder)
+  jpbTargetProject = jpbTargetProject + '_SYNC'
+
   # build up the UI
   fields = []
   fields += [{'name': 'sourceProject', 'value': sourceFolder, 'type': 'folder', 'tooltip': 'The source project for the sync.', 'readonly': True}]
-  fields += [{'name': 'targetProject', 'value': '', 'type': 'folder', 'tooltip': 'The target project for the sync.'}]
+  fields += [{'name': 'targetProject', 'value': jpbTargetProject, 'type': 'folder', 'tooltip': 'The target project for the sync.'}]
   fields += [{'name': 'createProject', 'value': False, 'type': 'bool', 'tooltip': 'If checked a project will be created in the targetProject location.'}]
-  fields += [{'name': 'sourceFolder', 'value': '', 'type': 'folder', 'tooltip': 'OPTIONAL: The source folder for the sync. Can be the project folder or levels higher up.'}]
-  fields += [{'name': 'targetFolder', 'value': '', 'type': 'folder', 'tooltip': 'OPTIONAL: The target folder for the sync. Can be the network folder or levels higher up.'}]
+  fields += [{'name': 'sourceFolder', 'value': jpbLocalFolder, 'type': 'folder', 'tooltip': 'OPTIONAL: The source folder for the sync. Can be the project folder or levels higher up.'}]
+  fields += [{'name': 'targetFolder', 'value': jpbSyncFolder, 'type': 'folder', 'tooltip': 'OPTIONAL: The target folder for the sync. Can be the network folder or levels higher up.'}]
+ 
+  # ------------------------- Juan modified END -------------------------
 
   hook = zookeeper.zkClient.zkSoftimageLogHook(Application)
   sys.stdout = hook
