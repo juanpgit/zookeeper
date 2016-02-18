@@ -52,9 +52,28 @@ def munch():
     Application.ActiveProject2 = Application.CreateProject2(projectFolder)
     scenePath = extFile.synchronize(cfg, uncMap)
 
+  scnTocPath = input.path + 'toc'
+  modelResolution = {}
+  if os.path.exists(scnTocPath):
+    scnTocContent = open(scnTocPath, 'r').read().split('\n')
+    for line in scnTocContent:
+      l = line.strip()
+      if not l.startswith('<Model name='):
+        continue
+      if l.find('active_resolution') == -1:
+        continue
+      l = l[13:]
+      (modelName, sep, l) = l.partition('"')
+      l = l.strip()
+      l = l.partition('"')[2]
+      res = int(l.partition('"')[0])
+      modelResolution[str(modelName)] = res
+      log("Referenced model %s is using resolution %d in scntoc file." % (str(modelName), res))
+
   # open scene
   Application.OpenScene(scenePath, False, False)
   scene = Application.ActiveProject.ActiveScene
+  sceneRoot = Application.ActiveSceneRoot
 
   # redirect the scene output if it is using the [Scene] token
   sceneName = os.path.split(input.path)[1].rpartition('.')[0]
@@ -72,11 +91,21 @@ def munch():
   for setting in settings:
     try:
       Application.SetValue(setting[0], setting[1])
-      Application.LogMessage("Set '%s' to '%s'" % (setting[0], str(setting[1])))
+      log("Set '%s' to '%s'" % (setting[0], str(setting[1])))
     except:
       pass
 
-  "Passes.Redshift_Options.AbortOnLicenseFail"
+  # remember all model resolutions
+  models = sceneRoot.Models
+  for i in range(models.Count):
+    model = models(i)
+    if model.ModelKind != 1:
+      continue
+    if modelResolution.has_key(str(model.name)):
+      continue
+    res = int(model.active_resolution.value)
+    modelResolution[str(model.name)] = res
+    log("Referenced model %s is using resolution %d." % (str(model.name), res))
 
   xsiFiles = scene.ExternalFiles
   extFileCompleted = {}
@@ -104,17 +133,18 @@ def munch():
     else:
       xsiFile.Path = extFileCompleted[userPath]
 
-    if extFile.resolution > -1:
-      owners = xsiFile.Owners
-      param = owners(0)
-      model = param.Parent
-      log('Processing referenced model '+model.Name)
-      if model.active_resolution.value == extFile.resolution:
-        Application.UpdateReferencedModel(model.FullName)
-      else:
-        model.active_resolution.value = extFile.resolution
-      Application.MakeModelLocal(model.FullName, "", "")
-  
+  for modelName in modelResolution:
+    log("Hit referenced model %s" % (modelName))
+    res = modelResolution[modelName]
+    activeRes = Application.GetValue('%s.active_resolution' % modelName)
+    Application.UpdateReferencedModel(modelName)
+    if activeRes != res:
+      Application.SetValue('%s.active_resolution' % modelName, res)
+      model.active_resolution.value = res
+    if res == 0:
+      log('Skipping offloaded ref model %s' % (modelName))
+    Application.MakeModelLocal(modelName, "", "")
+
   xsiFiles = scene.ExternalFiles
   for i in range(xsiFiles.Count):
     xsiFile = xsiFiles(i)

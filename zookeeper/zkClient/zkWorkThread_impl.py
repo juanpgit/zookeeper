@@ -127,6 +127,12 @@ class zkWorkThread(QtCore.QThread):
     self.__log.append(message)
     self.logged.emit(message)
 
+  def logCallback(self, **args):
+    message = args.get('message', '')
+    if not message:
+      return
+    self.log(message)
+
   def clearLog(self):
     log = self.__log
     self.__log = []
