@@ -1,0 +1,8 @@
+PYTHONPATH
+
+using Helges main branch
+C:\zookeeper
+
+using my fork
+C:\_JPstuff_\Dropbox\JPB_2D3D_share\git\zookeeper
+
