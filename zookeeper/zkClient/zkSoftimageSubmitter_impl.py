@@ -146,7 +146,11 @@ class zkSoftimageSubmitter(zkSubmitter):
         proj = zookeeper.zkDB.zkProject.getById(self.connection, id = int(param.Value))
         if proj:
           return proj.name
-    return None
+    # --- edit JPB --- take line out before push ---
+    return 'Juan_HF_cinematic'
+    #return None
+    # --- edit JPB --- take line out before push ---
+
 
   def getJobDefaultName(self):
     sceneName = str(self.__app.ActiveProject.ActiveScene.Name)
@@ -198,7 +202,8 @@ class zkSoftimageSubmitter(zkSubmitter):
     fields += [{'name': 'frameend', 'label': 'Last Frame', 'value': frameend, 'type': 'int', 'tooltip': 'The last frame of the sequence'}]
     fields += [{'name': 'framestep', 'label': 'Frame Step', 'value': framestep, 'type': 'int', 'tooltip': 'The stepping across the sequence'}]
     fields += [{'name': 'packagesize', 'label': 'Package Size', 'value': 20, 'type': 'int', 'tooltip': 'The number of frames which are processed as a batch.'}]
-    fields += [{'name': 'highprio_firstlast', 'label': 'Bump boundaries', 'value': False, 'type': 'bool', 'tooltip': 'Use higher priority for the first and last frame.'}]
+    #fields += [{'name': 'highprio_firstlast', 'label': 'Bump boundaries', 'value': False, 'type': 'bool', 'tooltip': 'Use higher priority for the first and last frame.'}]
+    fields += [{'name': 'highprio_firstlast', 'label': 'Bump boundaries', 'value': True, 'type': 'bool', 'tooltip': 'Use higher priority for the first and last frame.'}]
     # fields += [{'name': 'capturejob', 'label': 'capturejob', 'value': False, 'type': 'bool', 'tooltip': 'Enabling this also creates a capture movie.'}]
 
     prop = self.__app.ActiveSceneRoot.Properties.GetItem('zookeeper')
@@ -338,6 +343,11 @@ class zkSoftimageSubmitter(zkSubmitter):
       packageoffset = 0
       package = 0
 
+      # --- edit JPB --- take line out before push ---
+      # add a modulo for every 10th frame to prioritize
+      fm = 0
+      # --- edit JPB --- take line out before push ---
+
       for f in range(framestart, frameend+1, framestep):
 
         self.__app.LogMessage('Submitting frame '+str(f))
@@ -349,11 +359,21 @@ class zkSoftimageSubmitter(zkSubmitter):
         frame = zookeeper.zkDB.zkFrame.createNew(self.connection)
         frame.job = job
         frame.time = f
-        frame.priority = 50
+
+        # --- edit JPB --- take line out before push ---
+        # modulo every 10th frame
+        if fm%10 == 0:
+          frame.priority = 75
+        else:
+          frame.priority = 50
+        # --- edit JPB --- take line out before push ---
+
         frame.package = package
         if highprio_firstlast:
           if f == framestart or f == frameend:
             frame.priority = 75
-            frame.package = 1
+            #frame.package = 1
         job.pushFrameForSubmit(frame)
+
+        fm+=1
 

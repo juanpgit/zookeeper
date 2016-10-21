@@ -181,23 +181,6 @@ def zkSynchSceneToNetwork_Execute(  ):
             pathsToAdapt += [[{'obj': item, 'type': 'ICECache'}]]
 
 
-    # add alembic caches to sync
-    '''
-    the alembic cache operator splits the FilePath and the FileName
-    the ResolvedFilePath needs to be copied with the sync tool
-    but only the FilePath needs to be changed later
-    '''
-    abcNodes = Application.FindObjects( "", "{71BEC811-30CA-4F0A-AFD5-E07666749EB8}" )
-
-    if abcNodes.Count > 0:
-      for abc in abcNodes:
-
-        abcResolvedPath = abc.ResolvedFilePath.Value
-        abcFilePath = abc.FilePath
-
-        pathsToSynch += [abcResolvedPath]
-        pathsToAdapt += [[{'obj': abcFilePath, 'type': 'abcCache'}]]
-
     sourceProject = fields[0]['value']
     targetProject = fields[1]['value']
     createProject = fields[2]['value']
@@ -248,10 +231,6 @@ def zkSynchSceneToNetwork_Execute(  ):
 
           pathToAdapt['obj'].Path = synchedPaths[i]
 
-        if pathToAdapt['type'] == 'abcCache':
-          # just get the folder name off the path
-          abcFilePathSynced = os.path.dirname( synchedPaths[i] )
-          pathToAdapt['obj'].Value = abcFilePathSynced
 
         # here you can add other cases for your own file object types
         # elif pathToAdapt['type'] == 'MyType':
