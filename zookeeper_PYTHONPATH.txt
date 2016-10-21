@@ -4,5 +4,5 @@ using Helges main branch
 C:\zookeeper
 
 using my fork
-C:\_JPstuff_\Dropbox\JPB_2D3D_share\git\zookeeper
+R:\_JPstuff_actually_\git_repositories\zookeeper
 
